@@ -3,8 +3,8 @@ import chainlit as cl
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.llms import CTransformers
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+from langchain_core.prompts import PromptTemplate
+from langchain_classic.chains import LLMChain
 
 from sklearn.metrics.pairwise import cosine_similarity
 from deep_translator import GoogleTranslator
