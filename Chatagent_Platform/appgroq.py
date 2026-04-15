@@ -1,6 +1,6 @@
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
@@ -23,11 +23,11 @@ import re
 
 load_dotenv()
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
     raise EnvironmentError(
-        "GOOGLE_API_KEY not found. "
-        "Please create a .env file with: GOOGLE_API_KEY=your_key_here"
+        "GROQ_API_KEY not found. "
+        "Please create a .env file with: GROQ_API_KEY=your_key_here"
     )
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ if not GOOGLE_API_KEY:
 
 DB_FAISS_PATH = 'vectorstores/db_faiss'
 LOG_DIR       = 'logs'
-GEMINI_MODEL  = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")  # ← default is lite (highest free quota)
+DEFAULT_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -74,10 +74,15 @@ settings_config = [
         initial_value="Simple & Friendly",
     ),
     cl.input_widget.Select(
-        id="gemini_model",
-        label="🤖 Gemini Model",
-        values=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-lite"],
-        initial_value="gemini-1.5-flash",   
+        id="groq_model",
+        label="🤖 Model",
+        values=[
+            "llama-3.1-8b-instant",       # fastest, best for most queries
+            "llama3-70b-8192",      # smarter, slightly slower
+            "mixtral-8x7b-32768",   # great for long context
+            "gemma2-9b-it",         # Google's Gemma via Groq
+        ],
+        initial_value="llama-3.1-8b-instant",
     ),
     cl.input_widget.Slider(
         id="temperature",
@@ -229,7 +234,7 @@ def confidence_badge(score: float) -> str:
     elif score >= 0.50:
         return f"🟡 Medium confidence ({score:.0%})"
     else:
-        return f"🔴 Low confidence ({score:.0%}) — please verify with a doctor"
+        return f"🔴 Low confidence ({score:.0%}) "
 
 # ─────────────────────────────────────────────────────────────────────────────
 # RERANKER
@@ -243,16 +248,14 @@ def rerank_documents(query: str, documents: list, embeddings, top_k: int = 2) ->
     return [doc for doc, _ in ranked[:top_k]]
 
 # ─────────────────────────────────────────────────────────────────────────────
-# GEMINI LLM LOADER
+# GROQ LLM LOADER
 # ─────────────────────────────────────────────────────────────────────────────
 
-def load_llm(temperature: float = 0.5, model_name: str = GEMINI_MODEL):
-    clean_model = model_name.replace("models/", "")
-    return ChatGoogleGenerativeAI(
-        model=clean_model,
-        google_api_key=GOOGLE_API_KEY,
+def load_llm(temperature: float = 0.5, model_name: str = DEFAULT_MODEL):
+    return ChatGroq(
+        groq_api_key=GROQ_API_KEY,
+        model_name=model_name,
         temperature=temperature,
-        convert_system_message_to_human=True,
     )
 
 def load_embeddings():
@@ -289,33 +292,15 @@ async def run_pipeline(query: str, settings: dict, embeddings, db, logger) -> di
     # 4. Confidence
     confidence = compute_confidence(query_en, ranked_docs, embeddings)
 
-    # 5. LLM — always use gemini-2.0-flash-lite from settings (never falls back to flash)
+    # 5. LLM — Groq (free, fast, no quota issues)
     temperature = float(settings.get("temperature", 0.5))
     tone        = settings.get("tone", "Simple & Friendly")
-    model_name  = settings.get("gemini_model") or GEMINI_MODEL  # ← reads from UI, falls back to lite
+    model_name  = settings.get("groq_model") or DEFAULT_MODEL
     llm         = load_llm(temperature, model_name)
     prompt      = get_prompt(tone)
     context     = "\n\n".join([d.page_content for d in ranked_docs])
     chain       = prompt | llm | StrOutputParser()
-
-    # Retry up to 3 times on quota exhaustion (429)
-    answer_en = ""
-    for attempt in range(3):
-        try:
-            answer_en = await chain.ainvoke({"context": context, "question": query_en})
-            break
-        except Exception as e:
-            err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
-                wait = 60 * (attempt + 1)
-                await cl.Message(
-                    content=f"⏳ Gemini quota limit hit. Retrying in {wait}s (attempt {attempt+1}/3)..."
-                ).send()
-                await asyncio.sleep(wait)
-                if attempt == 2:
-                    answer_en = "I'm currently rate-limited. Please wait a minute and try again."
-            else:
-                raise
+    answer_en   = await chain.ainvoke({"context": context, "question": query_en})
 
     # 6. Translate back
     answer = translate_from_english(answer_en.strip(), chosen_lang)
@@ -379,9 +364,9 @@ async def start():
 
     await cl.Message(
         content=(
-            "👋 Welcome to **MedBot** — powered by ✨ Google Gemini!\n\n"
+            "👋 Welcome to **MedBot** — powered by ⚡ Groq!\n\n"
             "🌐 Use the **settings panel** (⚙️ top-right) to choose your **language**, "
-            "**tone**, **Gemini model**, and other preferences.\n\n"
+            "**tone**, **model**, and other preferences.\n\n"
             "Ask me anything about symptoms, conditions, medications, or general health!"
         )
     ).send()
@@ -402,7 +387,7 @@ async def main(message: cl.Message):
     if not query:
         return
 
-    async with cl.Step(name="✨ Asking Gemini...") as step:
+    async with cl.Step(name="⚡ Thinking...") as step:
         result = await run_pipeline(query, settings, embeddings, db, logger)
         step.output = "Done"
 
