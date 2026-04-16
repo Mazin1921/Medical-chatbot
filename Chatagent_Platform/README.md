@@ -1,173 +1,451 @@
-# 🏥 Llama2 Medical Chatbot
+<div align="center">
 
-A locally-running AI-powered medical chatbot built with **Meta's LLaMA-2**, **FAISS** vector search, and a sleek **Chainlit** UI — giving you a private, offline-capable assistant for medical knowledge queries.
+```
+███╗   ███╗███████╗██████╗ ██████╗  ██████╗ ████████╗
+████╗ ████║██╔════╝██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝
+██╔████╔██║█████╗  ██║  ██║██████╔╝██║   ██║   ██║   
+██║╚██╔╝██║██╔══╝  ██║  ██║██╔══██╗██║   ██║   ██║   
+██║ ╚═╝ ██║███████╗██████╔╝██████╔╝╚██████╔╝   ██║   
+╚═╝     ╚═╝╚══════╝╚═════╝ ╚═════╝  ╚═════╝    ╚═╝   
+```
 
-> ⚠️ **Disclaimer:** This chatbot is for **informational purposes only**. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
+### 🩺 AI-Powered Medical Knowledge Assistant
+
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![LangChain](https://img.shields.io/badge/LangChain-0.3+-1C3C3C?style=for-the-badge&logo=chainlink&logoColor=white)](https://langchain.com)
+[![Groq](https://img.shields.io/badge/Groq-Free_API-F55036?style=for-the-badge&logo=groq&logoColor=white)](https://groq.com)
+[![FAISS](https://img.shields.io/badge/FAISS-Vector_Store-0467DF?style=for-the-badge&logo=meta&logoColor=white)](https://github.com/facebookresearch/faiss)
+[![Chainlit](https://img.shields.io/badge/Chainlit-UI-FF6B35?style=for-the-badge)](https://chainlit.io)
+[![License](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
+
+**Ask medical questions in any language. Get instant, grounded answers — powered by LLaMA 3 via Groq.**
+
+[🚀 Quick Start](#-quick-start) · [🏗️ Architecture](#️-architecture) · [✨ Features](#-features) · [🤝 Contributing](#-contributing)
+
+---
+
+</div>
+
+## 🌟 What is MedBot?
+
+MedBot is a **production-grade, enterprise-level medical RAG chatbot** that combines the power of:
+
+- **Groq's blazing-fast inference** (LLaMA 3, Mixtral, Gemma2) — responses in under 1 second
+- **FAISS semantic vector search** — finds the most relevant information from your medical knowledge base
+- **Multi-source ingestion** — loads knowledge from both PDFs and live websites via Scrapy
+- **10-language support** — ask in Hindi, Arabic, Urdu, French and more; get answers back in the same language
+- **Enterprise safety layer** — detects crisis and emergency queries and routes them appropriately
+
+> ⚠️ **Medical Disclaimer:** This tool is for **educational and informational purposes only**. It is not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
 
 ---
 
 ## ✨ Features
 
-| Feature | Details |
+### 🤖 Multi-Model Support (via Groq — Free & Fast)
+
+| Model | Speed | Best For |
+|---|---|---|
+| `llama3-8b-8192` | ⚡ Fastest | General medical Q&A |
+| `llama3-70b-8192` | 🧠 Smartest | Complex clinical reasoning |
+| `mixtral-8x7b-32768` | 📚 Long context | Summarizing large documents |
+| `gemma2-9b-it` | 🎯 Balanced | Friendly, educational answers |
+
+Switch models **live from the UI** — no restart needed.
+
+---
+
+### 🌐 10-Language Real-Time Translation
+
+Ask in your native language, get answers back in the same language:
+
+| Language | Code | Language | Code |
+|---|---|---|---|
+| English | `en` | Arabic | `ar` |
+| Hindi | `hi` | Portuguese | `pt` |
+| French | `fr` | Urdu | `ur` |
+| Spanish | `es` | Bengali | `bn` |
+| German | `de` | Chinese | `zh-CN` |
+
+Auto-detects your input language — no manual selection needed.
+
+---
+
+### 🎛️ Live Settings Panel (UI)
+
+All settings are configurable from the ⚙️ panel — no code changes, no restarts:
+
+| Setting | Options |
 |---|---|
-| 🧠 **LLaMA-2 (7B)** | Runs locally via GGML quantized model — no API keys, no data sent to the cloud |
-| 🔍 **FAISS Vector Search** | Fast semantic retrieval over medical documents using Meta's FAISS library |
-| 💬 **Chainlit UI** | Clean, chat-style interface with real-time streaming responses |
-| 🔒 **Privacy First** | Fully local inference — your medical queries never leave your machine |
-| 📚 **Document-Grounded** | Answers are grounded in your own medical knowledge base, not just model weights |
+| 🌐 Response Language | 10 languages |
+| 🩺 Response Tone | Clinical · Friendly · Educational |
+| 🤖 Model | LLaMA3-8B · LLaMA3-70B · Mixtral · Gemma2 |
+| 🌡️ Temperature | 0.0 → 1.0 slider |
+| 📚 Top-K Documents | 2 → 10 slider |
+| 📊 Confidence Score | Toggle on/off |
+| 🔍 Auto-detect Language | Toggle on/off |
 
 ---
 
-## 🎯 Use Cases
+### 🛡️ Enterprise Safety Guard
 
-- Querying symptoms and general medical terminology
-- Searching and summarizing medical documents or PDFs
-- Building a private health knowledge assistant for clinics or personal use
-- Experimenting with local LLM + RAG (Retrieval-Augmented Generation) pipelines
+Two-layer automatic safety detection:
 
----
+**Layer 1 — Crisis Detection** (self-harm, overdose keywords)
+→ Returns crisis helpline numbers (iCall India, findahelpline.com) and stops processing
 
-## 🛠️ Tech Stack
-
-- **LLM:** [LLaMA-2 7B Chat (GGML)](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML)
-- **Vector Store:** [FAISS](https://github.com/facebookresearch/faiss) by Meta
-- **UI Framework:** [Chainlit](https://github.com/Chainlit/chainlit)
-- **Language:** Python 3.x
+**Layer 2 — Emergency Detection** (chest pain, heart attack, seizure keywords)
+→ Returns emergency numbers (112/911/999) and urges immediate action
 
 ---
 
-## 📸 Demo
+### 📊 Confidence Scoring
 
-> _Screenshots or a screen recording of the chatbot in action go here._
-
-```
-[ Add a GIF or screenshot of your chatbot interface here ]
-```
-
-Example interaction:
+Every answer includes a confidence badge based on cosine similarity between your query and retrieved documents:
 
 ```
-User:   What are the common symptoms of Type 2 diabetes?
-
-Bot:    Common symptoms of Type 2 diabetes include increased thirst,
-        frequent urination, unexplained weight loss, fatigue, blurred
-        vision, and slow-healing sores. Some people may have no symptoms
-        at all in the early stages...
+🟢 High confidence (87%)     — reliable answer from knowledge base
+🟡 Medium confidence (61%)   — answer found, verify with a doctor
+🔴 Low confidence (34%)      — knowledge base may not cover this topic
 ```
 
 ---
 
-## 🚀 Getting Started
+### 📋 Session Logging
 
-### Prerequisites
+Every session is automatically logged to `logs/session_<id>.log`:
 
-- Python 3.8+
-- Ubuntu / macOS (Windows via WSL)
-- ~8 GB RAM minimum (16 GB recommended)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/llama2-medical-chatbot.git
-cd llama2-medical-chatbot
+```json
+{
+  "query": "What are symptoms of diabetes?",
+  "detected_lang": "en",
+  "tone": "Simple & Friendly",
+  "model": "llama3-8b-8192",
+  "temperature": 0.5,
+  "confidence": 0.8241,
+  "answer_preview": "Common symptoms of Type 2 diabetes include..."
+}
 ```
 
-### 2. Create & Activate a Virtual Environment
+---
 
-```bash
-python3 -m venv env
-source env/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Download the LLaMA-2 Model
-
-Download the quantized GGML model from Hugging Face:
-
-👉 [TheBloke/Llama-2-7B-Chat-GGML](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/tree/main)
-
-Place the downloaded `.bin` file in the `models/` directory:
+## 🏗️ Architecture
 
 ```
-llama2-medical-chatbot/
-├── models/
-│   └── llama-2-7b-chat.ggmlv3.q4_0.bin
-├── app.py
-├── requirements.txt
-└── ...
+┌─────────────────────────────────────────────────────────────┐
+│                     KNOWLEDGE INGESTION                      │
+│                                                              │
+│  📄 PDF Files          🌐 Websites (Scrapy)                  │
+│  └─ PyPDFLoader        └─ Custom Spider                      │
+│       │                      │                              │
+│       └──────────┬───────────┘                              │
+│                  ▼                                           │
+│         RecursiveCharacterTextSplitter                       │
+│         (chunk_size=500, overlap=50)                         │
+│                  │                                           │
+│                  ▼                                           │
+│    HuggingFace Embeddings (all-MiniLM-L6-v2)                │
+│                  │                                           │
+│                  ▼                                           │
+│         FAISS Vector Store  ──────► Saved to disk           │
+└──────────────────────────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      QUERY PIPELINE                          │
+│                                                              │
+│  User Query                                                  │
+│      │                                                       │
+│      ▼                                                       │
+│  1. Safety Check ──► Crisis/Emergency → Return helpline      │
+│      │                                                       │
+│      ▼                                                       │
+│  2. Language Detection + Translate to English                │
+│      │                                                       │
+│      ▼                                                       │
+│  3. FAISS Retrieval (Top-K docs)                            │
+│      │                                                       │
+│      ▼                                                       │
+│  4. Cosine Reranking (Top-2 most relevant)                  │
+│      │                                                       │
+│      ▼                                                       │
+│  5. Confidence Score Calculation                            │
+│      │                                                       │
+│      ▼                                                       │
+│  6. Groq LLM (LLaMA3 / Mixtral / Gemma2)                   │
+│      │                                                       │
+│      ▼                                                       │
+│  7. Translate Answer → Target Language                       │
+│      │                                                       │
+│      ▼                                                       │
+│  8. Log to session file                                      │
+│      │                                                       │
+│      ▼                                                       │
+│  Chainlit UI Response                                        │
+└─────────────────────────────────────────────────────────────┘
 ```
-
-### 5. Run the App
-
-```bash
-chainlit run app.py -w
-```
-
-Then open your browser at **`http://localhost:8000`** 🎉
 
 ---
 
 ## 📁 Project Structure
 
 ```
-llama2-medical-chatbot/
+MedBot/
 │
-├── app.py                  # Main Chainlit app entry point
-├── requirements.txt        # Python dependencies
-├── models/                 # Place your downloaded LLaMA-2 model here
-├── data/                   # Your medical documents / PDFs for the knowledge base
-├── vectorstore/            # FAISS index (auto-generated after first run)
+├── app.py                        # 🚀 Main Chainlit application
+│
+├── ingest.py                     # 📥 Data ingestion pipeline
+│   ├── PDF loader (PyPDFLoader)
+│   ├── Scrapy web scraper
+│   ├── Text chunker
+│   └── FAISS index builder
+│
+├── scraper/                      # 🕷️ Scrapy spider for web ingestion
+│   ├── spider.py                 # Custom medical website spider
+│   └── settings.py
+│
+├── vectorstores/
+│   └── db_faiss/                 # 🗄️ FAISS vector index (auto-generated)
+│
+├── data/                         # 📚 Your PDF medical documents go here
+│
+├── logs/                         # 📋 Auto-generated session logs
+│
+├── .env                          # 🔑 API keys (never commit this)
+├── .gitignore
+├── requirements.txt
 └── README.md
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- A free [Groq API key](https://console.groq.com)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/medbot.git
+cd medbot
+```
+
+### 2. Create and activate virtual environment
+
+```bash
+python3 -m venv env
+source env/bin/activate        # Linux / Mac
+env\Scripts\activate           # Windows
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Set up your `.env` file
+
+Create a `.env` file in the project root:
+
+```env
+GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_MODEL=llama3-8b-8192
+```
+
+Get your **free** Groq API key at 👉 [console.groq.com](https://console.groq.com) — no card required.
+
+### 5. Add your medical data
+
+**Option A — PDF files:**
+Drop your PDF files into the `data/` folder.
+
+**Option B — Websites (Scrapy):**
+Edit `scraper/spider.py` and add your target medical websites.
+
+### 6. Build the knowledge base
+
+```bash
+python ingest.py
+```
+
+This scrapes websites, loads PDFs, chunks the text, generates embeddings, and saves the FAISS index to `vectorstores/db_faiss/`.
+
+### 7. Run the app
+
+```bash
+chainlit run app.py -w
+```
+
+Open your browser at **`http://localhost:8000`** 🎉
+
+---
+
+## 📥 Data Ingestion Pipeline
+
+MedBot supports two ingestion sources that are merged into a single FAISS index:
+
+### 📄 PDF Ingestion
+
+```python
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+
+loader = DirectoryLoader('data/', glob="**/*.pdf", loader_cls=PyPDFLoader)
+documents = loader.load()
+```
+
+Place any medical PDFs (textbooks, guidelines, research papers) in the `data/` folder and run `ingest.py`.
+
+### 🕷️ Web Scraping via Scrapy
+
+MedBot includes a Scrapy spider that cleanly extracts text from medical websites — stripping ads, navigation, and boilerplate:
+
+```python
+# scraper/spider.py
+class MedicalSpider(scrapy.Spider):
+    name = "medical"
+    start_urls = [
+        "https://www.mayoclinic.org/diseases-conditions",
+        "https://medlineplus.gov/",
+        # Add your sources here
+    ]
+
+    def parse(self, response):
+        # Extracts clean paragraph text only
+        text = " ".join(response.css("p::text").getall())
+        yield {"url": response.url, "content": text}
+```
+
+Run the spider:
+```bash
+cd scraper
+scrapy crawl medical -o output.json
+```
+
+Then `ingest.py` picks up `output.json` automatically and merges it with your PDFs.
+
+### 🗄️ FAISS Index Building
+
+```
+All documents
+    │
+    ▼
+RecursiveCharacterTextSplitter
+(chunk_size=500, overlap=50)
+    │
+    ▼
+HuggingFace Embeddings
+(sentence-transformers/all-MiniLM-L6-v2)
+    │
+    ▼
+FAISS.from_documents()
+    │
+    ▼
+Saved → vectorstores/db_faiss/
+```
+
+---
+
+## ⚙️ Configuration Reference
+
+| Variable | Default | Description |
+|---|---|---|
+| `GROQ_API_KEY` | required | Your Groq API key from console.groq.com |
+| `GROQ_MODEL` | `llama3-8b-8192` | Default model (overridable from UI) |
+
+---
+
+## 📦 Requirements
+
+```txt
+langchain
+langchain-community
+langchain-groq
+langchain-core
+faiss-cpu
+sentence-transformers
+chainlit
+deep-translator
+langdetect
+python-dotenv
+scrapy
+pypdf
+scikit-learn
+numpy
+```
+
+Install all at once:
+```bash
+pip install -r requirements.txt
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome and appreciated! Here's how to get involved:
+Contributions are welcome! Here's how to get involved:
 
 ### Reporting Issues
 
-- Use the [GitHub Issues](../../issues) tab to report bugs or suggest features.
-- Please include your OS, Python version, and steps to reproduce the issue.
+Open a [GitHub Issue](../../issues) with:
+- Your OS and Python version
+- The exact error message
+- Steps to reproduce
 
 ### Submitting Pull Requests
 
-1. **Fork** the repository
-2. **Create a branch** for your feature or fix:
+1. Fork the repository
+2. Create a feature branch:
    ```bash
    git checkout -b feature/your-feature-name
    ```
-3. **Make your changes** and write clear commit messages
-4. **Test** your changes locally before submitting
-5. **Open a Pull Request** with a description of what you changed and why
+3. Make your changes and commit clearly:
+   ```bash
+   git commit -m "feat: add XYZ feature"
+   ```
+4. Push and open a Pull Request
 
 ### Development Guidelines
 
-- Keep code readable and well-commented
-- Follow [PEP 8](https://peps.python.org/pep-0008/) for Python style
-- Don't commit model files or large binaries — add them to `.gitignore`
-- Update the README if you add new features or change setup steps
+- Follow PEP 8 for Python style
+- Never commit `.env`, model files, or `vectorstores/`
+- Add docstrings to new functions
+- Update this README if you add features
 
 ---
 
-## 📄 License
+## 🗺️ Roadmap
 
-This project is open-source. See the [LICENSE](LICENSE) file for details.
+- [ ] Voice input support
+- [ ] Image/X-ray analysis via multimodal models
+- [ ] User authentication for multi-user deployment
+- [ ] Docker containerization
+- [ ] REST API wrapper
+- [ ] Feedback loop to improve retrieval quality
 
 ---
 
 ## 🙏 Acknowledgements
 
-- [Meta AI](https://ai.meta.com/) for LLaMA-2 and FAISS
-- [TheBloke](https://huggingface.co/TheBloke) for the quantized GGML model weights
-- [Chainlit](https://chainlit.io/) for the chat UI framework
+| Library | Purpose |
+|---|---|
+| [Groq](https://groq.com) | Ultra-fast LLM inference |
+| [LangChain](https://langchain.com) | RAG pipeline framework |
+| [FAISS](https://github.com/facebookresearch/faiss) | Vector similarity search |
+| [Chainlit](https://chainlit.io) | Chat UI framework |
+| [Scrapy](https://scrapy.org) | Web scraping |
+| [HuggingFace](https://huggingface.co) | Sentence embeddings |
+| [deep-translator](https://github.com/nidhaloff/deep-translator) | Multi-language translation |
 
 ---
 
-<p align="center">Made with ❤️ for accessible medical AI</p>
+<div align="center">
+
+**Built with ❤️ for accessible medical AI**
+
+*If this project helped you, please ⭐ star the repository!*
+
+</div>
