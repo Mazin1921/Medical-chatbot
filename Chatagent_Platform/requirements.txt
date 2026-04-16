@@ -9,3 +9,10 @@ faiss_cpu
 chainlit
 huggingface_hub
 langchain-community
+deep_translator
+langchain_groq
+langchain-core
+langchain-community
+langchain-text-splitters
+pandas
+google-generativeai
